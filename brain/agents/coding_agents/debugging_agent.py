@@ -1,211 +1,306 @@
+import traceback
 from typing import Dict, List, Any
-from ..base_agent import CollaborativeAgent
+from ..base_agent import BaseAgent
 
-class ArchitectureAgent(CollaborativeAgent):
-    """AI agent specialized in software architecture and system design"""
+class DebuggingAgent(BaseAgent):
+    """AI agent specialized in debugging and error resolution"""
     
     def __init__(self, agent_id: str = None):
         capabilities = [
-            'system_design',
-            'architecture_patterns',
-            'scalability_planning',
-            'technology_selection',
-            'microservices_design'
+            'error_analysis',
+            'debugging',
+            'root_cause_analysis',
+            'fix_generation',
+            'performance_debugging'
         ]
         
         config = {
-            'learning_rate': 0.18,
+            'learning_rate': 0.25,
             'autonomy_level': 'high',
-            'architecture_patterns': ['microservices', 'monolith', 'serverless', 'event_driven'],
-            'technology_stacks': ['python', 'nodejs', 'java', 'go', 'rust']
+            'debugging_approaches': ['log_analysis', 'code_inspection', 'runtime_analysis'],
+            'error_categories': ['syntax', 'runtime', 'logical', 'performance']
         }
         
-        super().__init__(agent_id, "ArchitectureAgent", capabilities, config)
+        super().__init__(agent_id, "DebuggingAgent", capabilities, config)
         
     async def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
-        """Process architecture design tasks"""
-        task_type = task.get('type', 'design_system')
+        """Process debugging tasks"""
+        error_info = task.get('error_info', {})
+        code_context = task.get('code_context', '')
         
-        if task_type == 'design_system':
-            return await self._design_system_architecture(task)
-        elif task_type == 'evaluate_architecture':
-            return await self._evaluate_architecture(task)
-        elif task_type == 'migration_plan':
-            return await self._create_migration_plan(task)
-        else:
-            return await self._handle_unknown_task_type(task)
-    
-    async def _design_system_architecture(self, task: Dict[str, Any]) -> Dict[str, Any]:
-        """Design system architecture based on requirements"""
-        requirements = task.get('requirements', {})
-        scale_requirements = requirements.get('scale', 'small')
-        pattern_preference = requirements.get('pattern', 'microservices')
-        
-        architecture = await self._generate_architecture_design(requirements)
-        technology_stack = await self._select_technology_stack(architecture, requirements)
-        scalability_plan = await self._create_scalability_plan(architecture, scale_requirements)
+        error_analysis = await self._analyze_error(error_info, code_context)
+        root_cause = await self._identify_root_cause(error_analysis)
+        fixes = await self._generate_fixes(root_cause, code_context)
+        prevention_strategy = await self._create_prevention_strategy(error_analysis)
         
         return {
             'status': 'success',
-            'architecture_design': architecture,
-            'technology_stack': technology_stack,
-            'scalability_plan': scalability_plan,
-            'risk_assessment': await self._assess_architecture_risks(architecture),
-            'cost_estimation': await self._estimate_costs(architecture, technology_stack)
+            'error_analysis': error_analysis,
+            'root_cause': root_cause,
+            'proposed_fixes': fixes,
+            'prevention_strategy': prevention_strategy,
+            'confidence_level': await self._calculate_confidence(error_analysis, fixes),
+            'debugging_steps': await self._suggest_debugging_steps(error_analysis)
         }
     
-    async def _generate_architecture_design(self, requirements: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate architecture design based on requirements"""
-        # This would integrate with AI models in production
-        design = {
-            'pattern': requirements.get('pattern', 'microservices'),
-            'components': [],
-            'data_flow': {},
-            'apis': [],
-            'database_design': {}
+    async def _analyze_error(self, error_info: Dict, code_context: str) -> Dict[str, Any]:
+        """Analyze error information and code context"""
+        error_type = error_info.get('type', 'unknown')
+        error_message = error_info.get('message', '')
+        stack_trace = error_info.get('stack_trace', '')
+        
+        analysis = {
+            'error_type': error_type,
+            'error_category': await self._categorize_error(error_type, error_message),
+            'likely_causes': await self._identify_likely_causes(error_type, error_message, code_context),
+            'severity': await self._assess_severity(error_type, error_message),
+            'affected_components': await self._identify_affected_components(stack_trace, code_context),
+            'pattern_match': await self._check_known_patterns(error_type, error_message)
         }
         
-        # Generate component structure based on requirements
-        if 'features' in requirements:
-            for feature in requirements['features']:
-                design['components'].append({
-                    'name': f"{feature}_service",
-                    'responsibility': f"Handle {feature} functionality",
-                    'technology': 'python' if requirements.get('preferred_language') == 'python' else 'nodejs',
-                    'scaling_strategy': 'horizontal'
-                })
-        
-        return design
+        return analysis
     
-    async def _select_technology_stack(self, architecture: Dict, requirements: Dict) -> Dict[str, Any]:
-        """Select appropriate technology stack"""
-        preferred_language = requirements.get('preferred_language', 'python')
+    async def _categorize_error(self, error_type: str, error_message: str) -> str:
+        """Categorize the error type"""
+        error_lower = error_message.lower()
         
-        stack = {
-            'programming_language': preferred_language,
-            'frameworks': [],
-            'databases': [],
-            'messaging': 'rabbitmq',
-            'caching': 'redis',
-            'monitoring': 'prometheus'
-        }
-        
-        if preferred_language == 'python':
-            stack['frameworks'] = ['fastapi', 'django']
-            stack['databases'] = ['postgresql', 'mongodb']
-        elif preferred_language == 'nodejs':
-            stack['frameworks'] = ['express', 'nest.js']
-            stack['databases'] = ['mongodb', 'postgresql']
-        
-        return stack
+        if 'syntax' in error_type.lower() or 'syntax' in error_lower:
+            return 'syntax'
+        elif 'memory' in error_lower or 'stack' in error_lower:
+            return 'resource'
+        elif 'timeout' in error_lower or 'performance' in error_lower:
+            return 'performance'
+        elif 'import' in error_lower or 'module' in error_lower:
+            return 'dependency'
+        else:
+            return 'logical'
     
-    async def _create_scalability_plan(self, architecture: Dict, scale: str) -> Dict[str, Any]:
-        """Create scalability plan"""
-        scaling_strategies = {
-            'small': ['vertical_scaling', 'basic_caching'],
-            'medium': ['horizontal_scaling', 'advanced_caching', 'load_balancing'],
-            'large': ['auto_scaling', 'microservices', 'distributed_caching', 'cdn']
-        }
+    async def _identify_likely_causes(self, error_type: str, error_message: str, code_context: str) -> List[str]:
+        """Identify likely causes of the error"""
+        causes = []
+        
+        # Common pattern matching
+        if 'NoneType' in error_message and 'object has no attribute' in error_message:
+            causes.append("Uninitialized variable or missing return value")
+            causes.append("Database query returned None unexpectedly")
+            
+        if 'index out of range' in error_message.lower():
+            causes.append("Array/list access beyond bounds")
+            causes.append("Empty collection accessed without check")
+            
+        if 'key error' in error_message.lower():
+            causes.append("Dictionary key does not exist")
+            causes.append("Missing configuration or data")
+            
+        if 'division by zero' in error_message.lower():
+            causes.append("Unchecked divisor value")
+            causes.append("Missing input validation")
+            
+        # Context-specific analysis
+        if 'import' in error_message.lower():
+            causes.append("Missing dependency or incorrect import path")
+            causes.append("Virtual environment not activated")
+            
+        return causes
+    
+    async def _assess_severity(self, error_type: str, error_message: str) -> str:
+        """Assess error severity"""
+        critical_indicators = ['memory', 'segmentation', 'core dumped', 'data loss']
+        high_indicators = ['timeout', 'performance', 'database connection']
+        
+        if any(indicator in error_message.lower() for indicator in critical_indicators):
+            return 'critical'
+        elif any(indicator in error_message.lower() for indicator in high_indicators):
+            return 'high'
+        else:
+            return 'medium'
+    
+    async def _identify_affected_components(self, stack_trace: str, code_context: str) -> List[str]:
+        """Identify affected components from stack trace"""
+        components = []
+        
+        # Simple component extraction from stack trace
+        lines = stack_trace.split('\n')
+        for line in lines:
+            if 'File "' in line:
+                # Extract filename
+                start = line.find('File "') + 6
+                end = line.find('"', start)
+                if start < end:
+                    filename = line[start:end]
+                    components.append(filename.split('/')[-1])  # Just the filename
+        
+        return list(set(components))  # Remove duplicates
+    
+    async def _check_known_patterns(self, error_type: str, error_message: str) -> Dict[str, Any]:
+        """Check against known error patterns"""
+        known_patterns = self.memory.get('error_patterns', {})
+        
+        for pattern_id, pattern in known_patterns.items():
+            if (pattern.get('error_type') == error_type and 
+                pattern.get('message_fragment') in error_message):
+                return {
+                    'pattern_match': True,
+                    'pattern_id': pattern_id,
+                    'known_solution': pattern.get('solution'),
+                    'occurrence_count': pattern.get('count', 0) + 1
+                }
+        
+        return {'pattern_match': False}
+    
+    async def _identify_root_cause(self, error_analysis: Dict) -> Dict[str, Any]:
+        """Identify the root cause of the error"""
+        likely_causes = error_analysis.get('likely_causes', [])
         
         return {
-            'target_scale': scale,
-            'strategies': scaling_strategies.get(scale, scaling_strategies['medium']),
-            'milestones': await self._define_scaling_milestones(scale),
-            'monitoring_requirements': ['cpu_usage', 'memory_usage', 'response_time']
+            'primary_cause': likely_causes[0] if likely_causes else "Unknown cause",
+            'contributing_factors': likely_causes[1:] if len(likely_causes) > 1 else [],
+            'confidence': 0.8 if likely_causes else 0.3,
+            'investigation_path': await self._suggest_investigation_path(error_analysis)
         }
     
-    async def _define_scaling_milestones(self, scale: str) -> List[Dict[str, Any]]:
-        """Define scaling milestones"""
-        milestones = []
+    async def _generate_fixes(self, root_cause: Dict, code_context: str) -> List[Dict[str, Any]]:
+        """Generate potential fixes for the error"""
+        fixes = []
+        primary_cause = root_cause.get('primary_cause', '')
         
-        if scale == 'small':
-            milestones = [
-                {'users': 1000, 'action': 'Optimize database queries'},
-                {'users': 5000, 'action': 'Implement caching layer'}
-            ]
-        elif scale == 'medium':
-            milestones = [
-                {'users': 10000, 'action': 'Add load balancer'},
-                {'users': 50000, 'action': 'Implement microservices'}
-            ]
-        else:  # large
-            milestones = [
-                {'users': 100000, 'action': 'Implement auto-scaling'},
-                {'users': 500000, 'action': 'Global CDN deployment'}
-            ]
-        
-        return milestones
-    
-    async def _assess_architecture_risks(self, architecture: Dict) -> Dict[str, Any]:
-        """Assess architecture risks"""
-        risks = []
-        
-        if architecture['pattern'] == 'microservices':
-            risks.append({
-                'risk': 'Distributed system complexity',
-                'severity': 'high',
-                'mitigation': 'Implement comprehensive monitoring and tracing'
+        if 'Uninitialized variable' in primary_cause:
+            fixes.append({
+                'type': 'code_fix',
+                'description': 'Add null check before accessing variable',
+                'code_example': 'if variable is not None:\n    # use variable',
+                'risk': 'low',
+                'effort': 'low'
+            })
+            
+        if 'Array/list access beyond bounds' in primary_cause:
+            fixes.append({
+                'type': 'code_fix',
+                'description': 'Add bounds checking before array access',
+                'code_example': 'if index < len(array):\n    value = array[index]',
+                'risk': 'low',
+                'effort': 'low'
+            })
+            
+        if 'Missing dependency' in primary_cause:
+            fixes.append({
+                'type': 'dependency_fix',
+                'description': 'Install missing package',
+                'command': 'pip install missing-package',
+                'risk': 'low',
+                'effort': 'low'
             })
         
-        if len(architecture['components']) > 10:
-            risks.append({
-                'risk': 'Too many microservices',
-                'severity': 'medium',
-                'mitigation': 'Consolidate related services'
-            })
+        return fixes
+    
+    async def _create_prevention_strategy(self, error_analysis: Dict) -> Dict[str, Any]:
+        """Create strategy to prevent similar errors"""
+        error_category = error_analysis.get('error_category')
+        
+        strategies = {
+            'syntax': ['Use linters', 'Enable IDE syntax checking', 'Code review'],
+            'resource': ['Add resource monitoring', 'Implement cleanup handlers', 'Use context managers'],
+            'performance': ['Add performance tests', 'Monitor resource usage', 'Implement caching'],
+            'dependency': ['Use dependency management', 'Pin versions', 'Regular updates'],
+            'logical': ['Add unit tests', 'Code review', 'Static analysis']
+        }
         
         return {
-            'identified_risks': risks,
-            'overall_risk_level': 'medium' if risks else 'low',
-            'recommendations': [r['mitigation'] for r in risks]
+            'immediate_actions': strategies.get(error_category, ['Code review', 'Add tests']),
+            'long_term_strategies': [
+                'Implement comprehensive testing',
+                'Add monitoring and alerting',
+                'Regular code quality assessments'
+            ],
+            'tools_recommendations': ['pylint', 'pytest', 'logging', 'monitoring_dashboard']
         }
     
-    async def _estimate_costs(self, architecture: Dict, tech_stack: Dict) -> Dict[str, Any]:
-        """Estimate infrastructure costs"""
-        component_count = len(architecture.get('components', []))
+    async def _calculate_confidence(self, error_analysis: Dict, fixes: List[Dict]) -> float:
+        """Calculate confidence in the analysis and fixes"""
+        base_confidence = 0.5
         
-        # Simplified cost estimation
-        base_cost = 100  # monthly base cost
-        component_cost = component_count * 50
-        database_cost = len(tech_stack.get('databases', [])) * 30
+        # Increase confidence based on factors
+        if error_analysis.get('pattern_match', {}).get('pattern_match'):
+            base_confidence += 0.3
+            
+        if len(error_analysis.get('likely_causes', [])) > 0:
+            base_confidence += 0.1
+            
+        if len(fixes) > 0:
+            base_confidence += 0.1
+            
+        return min(1.0, base_confidence)
+    
+    async def _suggest_debugging_steps(self, error_analysis: Dict) -> List[str]:
+        """Suggest specific debugging steps"""
+        steps = [
+            "Reproduce the error consistently",
+            "Check recent code changes",
+            "Examine logs for additional context"
+        ]
         
-        total_monthly = base_cost + component_cost + database_cost
+        error_category = error_analysis.get('error_category')
+        if error_category == 'performance':
+            steps.extend([
+                "Profile code performance",
+                "Check resource usage patterns",
+                "Analyze database queries"
+            ])
+        elif error_category == 'resource':
+            steps.extend([
+                "Monitor memory usage",
+                "Check for memory leaks",
+                "Verify resource cleanup"
+            ])
+            
+        return steps
+    
+    async def _suggest_investigation_path(self, error_analysis: Dict) -> List[str]:
+        """Suggest investigation path for root cause analysis"""
+        path = [
+            "Review error context and stack trace",
+            "Check recent deployments or changes",
+            "Verify environment configuration"
+        ]
         
-        return {
-            'monthly_estimate': total_monthly,
-            'cost_breakdown': {
-                'base_infrastructure': base_cost,
-                'components': component_cost,
-                'databases': database_cost
-            },
-            'cost_optimization_tips': [
-                'Use reserved instances for long-term savings',
-                'Implement auto-scaling to reduce idle resources',
-                'Use spot instances for non-critical workloads'
-            ]
-        }
+        if error_analysis.get('severity') == 'critical':
+            path.insert(0, "Immediate incident response")
+            path.append("Post-mortem analysis")
+            
+        return path
     
     async def learn_from_experience(self, experience: Dict[str, Any]):
-        """Learn from architecture design experiences"""
-        if 'architecture_design' in experience:
-            design_patterns = self.memory.get('successful_patterns', {})
-            pattern = experience['architecture_design'].get('pattern')
-            if pattern:
-                design_patterns[pattern] = design_patterns.get(pattern, 0) + 1
-            self.memory['successful_patterns'] = design_patterns
+        """Learn from debugging experiences"""
+        if 'error_analysis' in experience and 'root_cause' in experience:
+            error_analysis = experience['error_analysis']
+            root_cause = experience['root_cause']
+            
+            # Store successful patterns
+            pattern_key = f"{error_analysis.get('error_type')}_{error_analysis.get('error_category')}"
+            
+            if 'error_patterns' not in self.memory:
+                self.memory['error_patterns'] = {}
+                
+            self.memory['error_patterns'][pattern_key] = {
+                'error_type': error_analysis.get('error_type'),
+                'error_category': error_analysis.get('error_category'),
+                'message_fragment': experience.get('error_info', {}).get('message', '')[:50],
+                'solution': root_cause.get('primary_cause'),
+                'count': self.memory['error_patterns'].get(pattern_key, {}).get('count', 0) + 1
+            }
     
     async def _create_improvement_plan(self, area: str) -> Dict[str, Any]:
-        """Create improvement plan for architecture design"""
+        """Create improvement plan for debugging"""
         return {
             'area': area,
-            'plan': f"Improve {area} architecture capabilities",
+            'plan': f"Improve {area} debugging capabilities",
             'actions': [
-                f"Study {area} patterns and best practices",
-                "Analyze real-world case studies",
-                "Practice designing for different scale requirements"
+                f"Study common {area} error patterns",
+                "Analyze real debugging cases",
+                "Practice root cause analysis techniques"
             ],
-            'metrics': ['design_quality', 'scalability_score'],
-            'timeline': '2 weeks'
+            'metrics': ['accuracy', 'resolution_time'],
+            'timeline': '1 week'
         }
     
     async def _implement_improvement(self, plan: Dict[str, Any]) -> Dict[str, Any]:
@@ -213,23 +308,6 @@ class ArchitectureAgent(CollaborativeAgent):
         return {
             'plan_id': plan['area'],
             'status': 'implemented',
-            'improvement_notes': f"Enhanced {plan['area']} architecture design capabilities",
-            'expected_impact': 'Better system designs and scalability planning'
+            'improvement_notes': f"Enhanced {plan['area']} debugging capabilities",
+            'expected_impact': 'Faster and more accurate debugging'
         }
-    
-    async def _merge_results(self, results: List[Dict]) -> Dict[str, Any]:
-        """Merge multiple architecture design results"""
-        combined_design = {
-            'components': [],
-            'patterns_used': [],
-            'total_services': 0
-        }
-        
-        for result in results:
-            if 'architecture_design' in result:
-                design = result['architecture_design']
-                combined_design['components'].extend(design.get('components', []))
-                combined_design['patterns_used'].append(design.get('pattern'))
-                combined_design['total_services'] += len(design.get('components', []))
-        
-        return combined_design
